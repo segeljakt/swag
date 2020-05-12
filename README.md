@@ -35,3 +35,11 @@ Workload Characteristics:
 Jonas Traub & Philipp Grulich
 
 
+| Algorithm                | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO   |
+| Subtract on Evict        | Worst O(1)     | Needed   | O(1)  | Needed     | No          | No          | No     |
+| Recalculate from Scratch | Worst O(n)     | Needed   | O(n)  | No         | No          | No          | No     |
+| Reactive Aggregator      | Avg O(log n)   | Needed   | O(n)  | No         | No          | No          | No     |
+| Two-Stacks               | Avg O(1)       | Needed   | O(n)  | No         | No          | No          | Needed |
+| FOA and IOA              | Worst O(1)     | Needed   | O(n)  | No         | No          | No          | Needed |
+| DABA                     | Worst O(1)     | Needed   | O(n)  | No         | No          | No          | Needed |
+| FiBA                     | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No     |

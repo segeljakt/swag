@@ -1,16 +1,14 @@
 mod pretty;
 // #![allow(unused)]
-use crate::pretty::*;
+use crate::Time;
+use crate::Uid;
+use crate::NEG_INFINITY;
+use crate::POS_INFINITY;
 use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use arrayvec::ArrayVec;
 use std::ops::Range;
 use std::ptr::NonNull;
-
-pub type Time = i32;
-const NEG_INFINITY: Time = i32::MIN;
-const POS_INFINITY: Time = i32::MAX;
-type Uid = u32;
 
 // While MIN_ARITY can be any integer greater than 1, most B-tree variations
 // require that MAX_ARITY be at least 2*MIN_ARITY-1. Let α(y) denote the arity
@@ -21,8 +19,9 @@ type Uid = u32;
 // * All nodes have α-1 timestamps and values: (t0,v0), ..., (tα-2,vα-2)
 // * All non-leaf nodes have α child pointers z0,...zα-1
 // For simplicity, we use MAX_ARITY = 2*MIN_ARITY
-const MIN_ARITY: usize = 2;
-const MAX_ARITY: usize = 4;
+type Arity = usize;
+const MIN_ARITY: Arity = 2;
+const MAX_ARITY: Arity = 4;
 
 // Non-spine nodes store the up-aggregate: Π↑
 //   * Such a node is neither a finger nor an ancestor of a finger.
@@ -47,7 +46,11 @@ const MAX_ARITY: usize = 4;
 // Π→(y) = (x = root ? 1 : Π→(y)) + Π^↑(z0) + Π^(y)
 //
 
-pub struct Tree<T: Clone + AbstractMonoid<O>, O: Operator> {
+pub struct FIBA<T, O>
+where
+    T: Clone + AbstractMonoid<O>,
+    O: Operator,
+{
     root: Box<Node<T, O>>,
     left_finger: NonNull<Node<T, O>>,
     right_finger: NonNull<Node<T, O>>,
@@ -179,7 +182,7 @@ where
 
     // BTree operations: Splits a node in two by the median item/child. The median item
     // separating the splitted node is inserted at the parent node.
-    fn split(&mut self, tree: &mut Tree<T, O>) {
+    fn split(&mut self, tree: &mut FIBA<T, O>) {
         let mut left = self;
         // Create new node
         let mut right = tree.new_node();
@@ -228,7 +231,7 @@ where
         &mut self,
         node_idx: usize,
         sibling_idx: usize,
-        tree: &mut Tree<T, O>,
+        tree: &mut FIBA<T, O>,
     ) -> &mut Node<T, O> {
         // Merge a and b into one node, and transfer the item between them to the new node
         // Parent is self
@@ -509,7 +512,7 @@ where
     // After-the-fact strategy, amortized constant as long as MAX_ARITY ≥ 2*MIN_ARITY
     // The amortized cost is O(1) as rebalancing rarely goes all the way up the tree.
     // The worst-case cost is O(log(n)), bounded by the tree height.
-    fn rebalance_for_insert(&mut self, tree: &mut Tree<T, O>) -> (&mut Node<T, O>, Spine) {
+    fn rebalance_for_insert(&mut self, tree: &mut FIBA<T, O>) -> (&mut Node<T, O>, Spine) {
         let mut node = self;
         let mut hit = node.spine;
         while node.get_arity() > MAX_ARITY {
@@ -530,7 +533,7 @@ where
     fn rebalance_for_evict(
         &mut self,
         to_repair: Option<Uid>,
-        tree: &mut Tree<T, O>,
+        tree: &mut FIBA<T, O>,
     ) -> (&mut Node<T, O>, Spine) {
         let mut node = self;
         let mut hit = node.spine;
@@ -567,7 +570,7 @@ where
     // To evict something from an inner node
     // Function evict_inner creates an obligation to repair an extra node during
     // rebalancing, handled by parameter to_repair.
-    fn evict_inner(&mut self, idx: usize, tree: &mut Tree<T, O>) -> (&mut Node<T, O>, Spine) {
+    fn evict_inner(&mut self, idx: usize, tree: &mut FIBA<T, O>) -> (&mut Node<T, O>, Spine) {
         let node = unsafe { (self as *mut Node<T, O>).as_mut().unwrap() };
         let (leaf, item) = if self.children[idx + 1].get_arity() > MIN_ARITY {
             let right = &mut self.children[idx + 1];
@@ -593,7 +596,7 @@ where
     }
 }
 
-impl<T, O> Tree<T, O>
+impl<T, O> FIBA<T, O>
 where
     T: Clone + AbstractMonoid<O> + 'static,
     O: Operator + 'static,
@@ -615,12 +618,12 @@ where
         }
         self.root.local_repair_agg();
     }
-    pub fn new() -> Tree<T, O> {
+    pub fn new() -> FIBA<T, O> {
         let counter = 0;
         let root = Box::new(Node::new(counter));
         let left_finger = NonNull::from(root.as_ref());
         let right_finger = NonNull::from(root.as_ref());
-        Tree {
+        FIBA {
             root,
             left_finger,
             right_finger,
@@ -648,7 +651,7 @@ where
     }
     // Checks whether t is already in the window, i.e. whether there is an i
     pub fn insert_test(&mut self, t: Time, v: T) {
-        let tree = unsafe { (self as *mut Tree<T, O>).as_mut().unwrap() };
+        let tree = unsafe { (self as *mut FIBA<T, O>).as_mut().unwrap() };
         // Search for the node where t belongs
         let node = self.search_node_test(t);
         // Update stored aggregate
@@ -674,7 +677,7 @@ where
     // such that t = ti. If so, it replaces (ti,vi) by (ti,vi+v). Otherwise, it
     // inserts (t,v) into the window at the appropriate location.
     pub fn insert(&mut self, t: Time, v: T) {
-        let tree = unsafe { (self as *mut Tree<T, O>).as_mut().unwrap() };
+        let tree = unsafe { (self as *mut FIBA<T, O>).as_mut().unwrap() };
         // Search for the node where t belongs
         let node = self.search_node(t);
         // Update stored aggregate
@@ -700,7 +703,7 @@ where
     // Checks whether t is in the window, i.e., whether there is an i such that
     // t = ti. If so, it removes (ti,vi) from the window. Otherwise it does nothing.
     pub fn evict(&mut self, t: Time) {
-        let tree = unsafe { (self as *mut Tree<T, O>).as_mut().unwrap() };
+        let tree = unsafe { (self as *mut FIBA<T, O>).as_mut().unwrap() };
         let node = self.search_node(t);
         if let Some(idx) = node.local_search(t) {
             let (top, hit) = if node.is_leaf() {

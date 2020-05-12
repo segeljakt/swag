@@ -3,10 +3,7 @@ use alga::general::AbstractMonoid;
 use alga::general::AbstractSemigroup;
 use alga::general::Identity;
 use alga::general::Operator;
-use {
-    criterion::*,
-    swag::{Time, Tree},
-};
+use {criterion::*, swag::fiba::Fiba, swag::Time};
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 struct Value(i32);
 
@@ -129,7 +126,7 @@ criterion_main!(benches);
 /// * Higher min-arity => Better for cheap operators, since fewer rebalances/repairs
 fn experiment_1_varying_distance(criterion: &mut Criterion) {
     // Setup
-    let mut tree = Tree::<Value, BinOp>::new();
+    let mut tree = Fiba::<Value, BinOp>::new();
     let timestamps = (2 as Time).pow(22);
     for timestamp in 0..timestamps {
         tree.insert(timestamp, Value(0));
@@ -189,7 +186,7 @@ fn experiment_1_varying_distance(criterion: &mut Criterion) {
 // * Measure number of clock cycles per round
 fn experiment_2_latency(criterion: &mut Criterion) {
     // Setup
-    let mut tree = Tree::<Value, BinOp>::new();
+    let mut tree = Fiba::<Value, BinOp>::new();
     let timestamps = (2 as Time).pow(22);
     for timestamp in 0..timestamps {
         tree.insert(timestamp, Value(0));

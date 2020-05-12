@@ -3,6 +3,7 @@ use alga::general::AbstractMonoid;
 use alga::general::AbstractSemigroup;
 use alga::general::Identity;
 use alga::general::Operator;
+use swag::fiba::*;
 use swag::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -34,7 +35,7 @@ impl AbstractMonoid<BinOp> for Value {}
 
 #[test]
 fn fiba_lifo() {
-    let mut tree: Tree<Value, BinOp> = Tree::new();
+    let mut tree: FIBA<Value, BinOp> = FIBA::new();
     let count = 100;
     for i in 1..=count {
         tree.insert(i, Value(1));
@@ -48,7 +49,7 @@ fn fiba_lifo() {
 
 #[test]
 fn fiba_fifo() {
-    let mut tree: Tree<Value, BinOp> = Tree::new();
+    let mut tree: FIBA<Value, BinOp> = FIBA::new();
     let count = 15;
     for i in 1..=count {
         tree.insert(i, Value(1));
@@ -62,7 +63,7 @@ fn fiba_fifo() {
 
 #[test]
 fn fiba_random_access() {
-    let mut tree: Tree<Value, BinOp> = Tree::new();
+    let mut tree: FIBA<Value, BinOp> = FIBA::new();
     const COUNT: usize = 10;
 
     let times: [Time; COUNT] = [10, 0, 1, 9, -1, 4, 20, 3, -10, -30];
@@ -82,7 +83,7 @@ fn fiba_random_access() {
 
 #[test]
 fn fiba_range_query() {
-    let mut tree: Tree<Value, BinOp> = Tree::new();
+    let mut tree: FIBA<Value, BinOp> = FIBA::new();
     let count = 15;
     for i in 1..=count {
         tree.insert(i, Value(1));
@@ -94,7 +95,7 @@ fn fiba_range_query() {
 
 #[test]
 fn fiba_big_query() {
-    let mut tree: Tree<Value, BinOp> = Tree::new();
+    let mut tree: FIBA<Value, BinOp> = FIBA::new();
     let timestamps = (2 as Time).pow(22);
     for timestamp in 0..timestamps {
         tree.insert(timestamp, Value(1));

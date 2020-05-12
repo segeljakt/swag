@@ -1,6 +1,6 @@
-use crate::*;
+use crate::fiba::{Item, Node, FIBA};
+use alga::general::{AbstractMonoid, Operator};
 use itertools::*;
-use std::fmt::Debug;
 
 pub trait Pretty {
     fn pretty(&self, indent: usize) -> String;
@@ -13,7 +13,7 @@ pub trait Pretty {
     }
 }
 
-impl<T: AbstractMonoid<O> + 'static, O: Operator> Pretty for Tree<T, O> {
+impl<T: AbstractMonoid<O> + 'static, O: Operator> Pretty for FIBA<T, O> {
     fn pretty(&self, indent: usize) -> String {
         unsafe {
             format!(

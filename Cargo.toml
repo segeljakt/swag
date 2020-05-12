@@ -19,10 +19,6 @@ publish            = false
 name               = "swag"
 path               = "src/lib.rs"
 
-[[bin]]
-name               = "bin"
-path               = "src/main.rs"
-
 [[bench]]
 name               = "bench"
 harness            = false
@@ -37,13 +33,13 @@ typed-arena        = "2.0.1"
 quickcheck         = "0.9.2"
 rand               = "0.7.3"
 alga = "0.9.3"
-object-pool = "0.4.4"
+object-pool = "0.5.1"
 
 [dev-dependencies]
-criterion          = "0.3.1"
+criterion          = "0.3.2"
 criterion-cpu-time = "0.1.0"
 proptest           = "0.9.6"
-honggfuzz          = "0.5.47"
+honggfuzz          = "0.5.48"
 
 [profile.dev]
 opt-level        = 0
