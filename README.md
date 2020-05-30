@@ -51,17 +51,18 @@ The Windowing Problem is defined by the following characteristics, definition fr
 
 > — query(): Agg combines the values in time order using the ⊗ operator. In other words, it returns v1 ⊗ … ⊗ vn if the window is non-empty, or 1 if empty.
 
-| Algorithm                                    | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO |
-|----------------------------------------------|----------------|----------|-------|------------|-------------|-------------|------|
-| SOE  [2] (Subtract on Evict)                 | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
-| RFS  [2] (Recalculate from Scratch)          | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
-| RA   [2] (Reactive Aggregator)               | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
-| TS   [2] (Two-Stacks)                        | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
-| FOA  [2] (Functional Okasaki Aggregator)     | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| IOA  [2] (Imperative Okasaki Aggregator)     | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| DABA [2] (De-Amortized Banker's Aggregator)  | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| FiBA [3] (Finger B-Tree Aggregator)          | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
+# Algorithms
 
+| Algorithm                             | Alias | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO |
+|---------------------------------------|-------|----------------|----------|-------|------------|-------------|-------------|------|
+| Subtract on Evict                 [2] | SoE   | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
+| Recalculate from Scratch          [2] | RFS   | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
+| Reactive Aggregator               [2] | -     | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
+| Two-Stacks                        [2] | -     | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
+| Functional Okasaki Aggregator     [2] | FOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| Imperative Okasaki Aggregator     [2] | IOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| De-Amortized Banker's Aggregator  [2] | DABA  | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| Finger B-Tree Aggregator          [3] | FiBA  | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
 
 # References
 

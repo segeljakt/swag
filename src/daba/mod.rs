@@ -1,3 +1,4 @@
+#![allow(unused)]
 mod chunked_array_queue;
 
 use crate::Window;

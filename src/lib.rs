@@ -47,5 +47,5 @@ pub mod rfs;
 pub mod foa;
 // De-Amortized Banker's Aggregator
 pub mod daba;
-// Slide side (TwoStacks with shared windows)
+// Slide Side (TwoStacks with shared windows)
 pub mod slide_side;

@@ -51,26 +51,28 @@ where
         for (i, query) in self.queries.iter().enumerate() {
             let cur_window_size = window_size(query);
             let mut has_wrapped = false;
-            let mut end_ptr = self.cur_pos;
+            let mut end_ptr = self.cur_pos as isize;
             if end_ptr == 0 {
-                end_ptr = self.window_size;
+                end_ptr = self.window_size as isize;
             }
-            let mut start_ptr = end_ptr - cur_window_size;
+            let mut start_ptr = end_ptr - cur_window_size as isize;
             if start_ptr < 0 {
                 has_wrapped = true;
-                start_ptr += self.window_size;
+                start_ptr += self.window_size as isize;
             }
             if !has_wrapped && start_ptr == 0 {
-                self.aggs[i] = self.back[end_ptr].clone()
+                self.aggs[i] = self.back[end_ptr as usize].clone()
             } else if has_wrapped {
-                self.aggs[i] = self.back[end_ptr].operate(&self.front[self.window_size - start_ptr])
+                self.aggs[i] = self.back[end_ptr as usize]
+                    .operate(&self.front[self.window_size - start_ptr as usize])
             } else {
-                self.aggs[i] = self.back[end_ptr].operate(&self.back[start_ptr].two_sided_inverse())
+                self.aggs[i] = self.back[end_ptr as usize]
+                    .operate(&self.back[start_ptr as usize].two_sided_inverse())
             }
         }
     }
 }
 
 fn window_size(range: &Range<Count>) -> usize {
-    (range.start - range.end) as usize
+    (range.end - range.start) as usize
 }
