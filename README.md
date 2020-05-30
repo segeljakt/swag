@@ -11,8 +11,7 @@ This is a crate for Sliding Window Aggregation (SWAG).
 
 # Problems
 
-Workload Characteristics [^1]:
-<span id="a1">[¹](#1)</span>
+Workload Characteristics [1]:
 
 * Aggregation Functions
   * Distributive
@@ -35,16 +34,22 @@ Workload Characteristics [^1]:
 
 | Algorithm                                    | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO |
 |----------------------------------------------|----------------|----------|-------|------------|-------------|-------------|------|
-| SOE  <span id="a1">[²](#1)</span> (Subtract on Evict)                | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
-| RFS  <span id="a1">[²](#1)</span> (Recalculate from Scratch)         | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
-| RA   <span id="a1">[²](#1)</span> (Reactive Aggregator)              | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
-| TS   <span id="a1">[²](#1)</span> (Two-Stacks)                       | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
-| FOA  <span id="a1">[²](#1)</span> (Functional Okasaki Aggregator)    | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| IOA  <span id="a1">[²](#1)</span> (Imperative Okasaki Aggregator)    | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| DABA <span id="a1">[²](#1)</span> (De-Amortized Banker's Aggregator) | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| FiBA <span id="a1">[³](#1)</span> (Finger B-Tree Aggregator)         | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
+| SOE  [2] (Subtract on Evict)                 | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
+| RFS  [2] (Recalculate from Scratch)          | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
+| RA   [2] (Reactive Aggregator)               | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
+| TS   [2] (Two-Stacks)                        | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
+| FOA  [2] (Functional Okasaki Aggregator)     | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| IOA  [2] (Imperative Okasaki Aggregator)     | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| DABA [2] (De-Amortized Banker's Aggregator)  | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| FiBA [3] (Finger B-Tree Aggregator)          | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
 
-<span id="1">¹</span> Traub, J., Grulich, P.M., Cuéllar, A.R., Breß, S., Katsifodimos, A., Rabl, T. and Markl, V., 2019. Efficient Window Aggregation with General Stream Slicing. In EDBT (pp. 97-108).[⏎](#a1)<br>
-<span id="2">²</span> Tangwongsan, K., Hirzel, M. and Schneider, S., 2017, June. Low-latency sliding-window aggregation in worst-case constant time. In Proceedings of the 11th ACM International Conference on Distributed and Event-based Systems (pp. 66-77). [⏎](#a2)<br>
-<span id="3">³</span> Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. Optimal and general out-of-order sliding-window aggregation. Proceedings of the VLDB Endowment, 12(10), pp.1167-1180. [⏎](#a3)<br>
+
+# References
+
+[1] Traub, J., Grulich, P.M., Cuéllar, A.R., Breß, S., Katsifodimos, A., Rabl, T. and Markl, V., 2019. **Efficient Window Aggregation with General Stream Slicing.** In EDBT (pp. 97-108).
+
+[2] Tangwongsan, K., Hirzel, M. and Schneider, S., 2017, June. **Low-latency sliding-window aggregation in worst-case constant time.** In Proceedings of the 11th ACM International Conference on Distributed and Event-based Systems (pp. 66-77).
+
+[3] Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. **Optimal and general out-of-order sliding-window aggregation.** Proceedings of the VLDB Endowment, 12(10), pp.1167-1180.
+
 
