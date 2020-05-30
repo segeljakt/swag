@@ -1,6 +1,6 @@
 # SWAG - Sliding Window Aggregation
 
-SWAG is a 
+This is a crate for Sliding Window Aggregation (SWAG).
 
 # API
 
@@ -11,7 +11,7 @@ SWAG is a
 
 # Problems
 
-Workload Characteristics:
+Workload Characteristics [^1]:
 
 * Aggregation Functions
   * Distributive
@@ -32,14 +32,19 @@ Workload Characteristics:
   * Tuple count
   * Arbitrary
 
-Jonas Traub & Philipp Grulich
+| Algorithm                                    | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO |
+|----------------------------------------------|----------------|----------|-------|------------|-------------|-------------|------|
+| SOE  [^2] (Subtract on Evict)                | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
+| RFS  [^2] (Recalculate from Scratch)         | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
+| RA   [^2] (Reactive Aggregator)              | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
+| TS   [^2] (Two-Stacks)                       | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
+| FOA  [^2] (Functional Okasaki Aggregator)    | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| IOA  [^2] (Imperative Okasaki Aggregator)    | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| DABA [^2] (De-Amortized Banker's Aggregator) | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| FiBA [^3] (Finger B-Tree Aggregator)         | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
+
+[^1]: Traub, J., Grulich, P.M., Cuéllar, A.R., Breß, S., Katsifodimos, A., Rabl, T. and Markl, V., 2019. Efficient Window Aggregation with General Stream Slicing. In EDBT (pp. 97-108).
+[^2]: Tangwongsan, K., Hirzel, M. and Schneider, S., 2017, June. Low-latency sliding-window aggregation in worst-case constant time. In Proceedings of the 11th ACM International Conference on Distributed and Event-based Systems (pp. 66-77).
+[^3]: Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. Optimal and general out-of-order sliding-window aggregation. Proceedings of the VLDB Endowment, 12(10), pp.1167-1180.
 
 
-| Algorithm                | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO   |
-| Subtract on Evict        | Worst O(1)     | Needed   | O(1)  | Needed     | No          | No          | No     |
-| Recalculate from Scratch | Worst O(n)     | Needed   | O(n)  | No         | No          | No          | No     |
-| Reactive Aggregator      | Avg O(log n)   | Needed   | O(n)  | No         | No          | No          | No     |
-| Two-Stacks               | Avg O(1)       | Needed   | O(n)  | No         | No          | No          | Needed |
-| FOA and IOA              | Worst O(1)     | Needed   | O(n)  | No         | No          | No          | Needed |
-| DABA                     | Worst O(1)     | Needed   | O(n)  | No         | No          | No          | Needed |
-| FiBA                     | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No     |
