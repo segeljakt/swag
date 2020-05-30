@@ -55,14 +55,14 @@ The Windowing Problem is defined by the following characteristics, definition fr
 
 | Algorithm                             | Alias | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO |
 |---------------------------------------|-------|----------------|----------|-------|------------|-------------|-------------|------|
-| Subtract on Evict                 [2] | SoE   | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
-| Recalculate from Scratch          [2] | RFS   | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
-| Reactive Aggregator               [2] | -     | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
-| Two-Stacks                        [2] | -     | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
-| Functional Okasaki Aggregator     [2] | FOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| Imperative Okasaki Aggregator     [2] | IOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| De-Amortized Banker's Aggregator  [2] | DABA  | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
-| Finger B-Tree Aggregator          [3] | FiBA  | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
+| **Subtract on Evict**                 [2] | SoE   | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
+| **Recalculate from Scratch**          [2] | RFS   | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
+| **Reactive Aggregator**               [2] | -     | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
+| **Two-Stacks**                        [2] | -     | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
+| **Functional Okasaki Aggregator**     [2] | FOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| **Imperative Okasaki Aggregator**     [2] | IOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| **De-Amortized Banker's Aggregator**  [2] | DABA  | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
+| **Finger B-Tree Aggregator**          [3] | FiBA  | Worst O(log n) | No       | O(n)  | No         | Yes         | No          | No   |
 
 # References
 
