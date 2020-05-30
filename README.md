@@ -2,36 +2,9 @@
 
 This is a crate for Sliding Window Aggregation (SWAG).
 
-# API
+# Windowing Problem
 
-## Out-of-Order API (w/ Associativity)
-
-
-
-> **Definition 1.**
-> Let(⊗, 1) be a binary operator from a monoid and its identity. The out-of-order sliding-window aggregation (OoO SWAG) ADT is to maintain a time-ordered sliding window (t1, v1) … (tn, vn), ti < ti+1, supporting the following operations:
-
-> — insert(t: Time, v: Agg) checks whether t is already in the window, i.e., whether there is an i such that t = ti. If so, it replaces vi by (ti, vi) by (ti,vi⊗v). Otherwise, it inserts v into the window at the appropriate location.
-
-> — evict(t: Time) checks whether t is in the window, i.e., whether there is an i such that t=ti. If so, it removes ti from the window. Otherwise, it does nothing.
-
-> — query(): Agg combines the values in time order using the ⊗ operator. In other words, it returns v1 ⊗ … ⊗ vn if the window is non-empty, or 1 if empty.
-
-## In-Order API
-
-> **Definition 1.**
-> Let(⊗, 1) be a binary operator from a monoid and its identity. The out-of-order sliding-window aggregation (OoO SWAG) ADT is to maintain a time-ordered sliding window (t1, v1) … (tn, vn), ti < ti+1, supporting the following operations:
-
-> — insert(t: Time, v: Agg) checks whether t is already in the window, i.e., whether there is an i such that t = ti. If so, it replaces vi by (ti, vi) by (ti,vi⊗v). Otherwise, it inserts v into the window at the appropriate location.
-
-> — evict(t: Time) checks whether t is in the window, i.e., whether there is an i such that t=ti. If so, it removes ti from the window. Otherwise, it does nothing.
-
-> — query(): Agg combines the values in time order using the ⊗ operator. In other words, it returns v1 ⊗ … ⊗ vn if the window is non-empty, or 1 if empty.
-
-
-# Problems
-
-Workload Characteristics [1]:
+The Windowing Problem is defined by the following characteristics, definition from [1]:
 
 * Aggregation Functions
   * Distributive
@@ -52,8 +25,31 @@ Workload Characteristics [1]:
   * Tuple count
   * Arbitrary
 * State
-  * State (Disk or Memory)
-  * Parallelism
+  * In-memory
+  * Out-of-core
+
+# API
+
+## Out-of-Order API [3]
+
+* Aggregation Functions
+  * Associativity (Required)
+* Stream Order
+  * Out-of-order (Focus)
+* Window Measures
+  * Time (Required)
+* State
+  * In-Memory (Required)
+
+> **Definition 1.**
+
+> Let(⊗, 1) be a binary operator from a monoid and its identity. The out-of-order sliding-window aggregation (OoO SWAG) ADT is to maintain a time-ordered sliding window (t1, v1) … (tn, vn), ti < ti+1, supporting the following operations:
+
+> — insert(t: Time, v: Agg) checks whether t is already in the window, i.e., whether there is an i such that t = ti. If so, it replaces vi by (ti, vi) by (ti,vi⊗v). Otherwise, it inserts v into the window at the appropriate location.
+
+> — evict(t: Time) checks whether t is in the window, i.e., whether there is an i such that t=ti. If so, it removes ti from the window. Otherwise, it does nothing.
+
+> — query(): Agg combines the values in time order using the ⊗ operator. In other words, it returns v1 ⊗ … ⊗ vn if the window is non-empty, or 1 if empty.
 
 | Algorithm                                    | Time           | In-Order | Space | Invertible | Associative | Commutative | FIFO |
 |----------------------------------------------|----------------|----------|-------|------------|-------------|-------------|------|
