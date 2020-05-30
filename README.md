@@ -1,4 +1,5 @@
-# SWAG - Sliding Window Aggregation
+<h1 align="center">SWAG - Sliding Window Aggregation</h1>
+<h3 align="center">(Work in progress)</h3>
 
 This is a crate for Sliding Window Aggregation (SWAG).
 
