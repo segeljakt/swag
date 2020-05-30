@@ -1,5 +1,6 @@
+// Credit for the comments goes to:
+//   Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. Optimal and general out-of-order sliding-window aggregation. Proceedings of the VLDB Endowment, 12(10), pp.1167-1180.
 mod pretty;
-// #![allow(unused)]
 use crate::Time;
 use crate::Uid;
 use crate::NEG_INFINITY;
