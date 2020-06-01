@@ -1,8 +1,9 @@
-use crate::Window;
+use crate::FifoWindow;
 use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use std::marker::PhantomData;
 
+#[derive(Debug)]
 struct Item<Value: Clone> {
     agg: Value,
     val: Value,
@@ -14,6 +15,7 @@ impl<Value: Clone> Item<Value> {
     }
 }
 
+#[derive(Debug)]
 pub struct TwoStacks<Value, BinOp>
 where
     Value: AbstractMonoid<BinOp> + Clone,
@@ -24,7 +26,7 @@ where
     op: PhantomData<BinOp>,
 }
 
-impl<Value, BinOp> Window<Value, BinOp> for TwoStacks<Value, BinOp>
+impl<Value, BinOp> FifoWindow<Value, BinOp> for TwoStacks<Value, BinOp>
 where
     Value: AbstractMonoid<BinOp> + Clone,
     BinOp: Operator,
@@ -36,11 +38,11 @@ where
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: Value) {
+    fn push(&mut self, v: Value) {
         self.back
             .push(Item::new(Self::agg(&self.back).operate(&v), v));
     }
-    fn evict(&mut self) {
+    fn pop(&mut self) {
         if self.front.is_empty() {
             while let Some(top) = self.back.pop() {
                 self.front

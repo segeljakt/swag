@@ -1,33 +1,35 @@
-use crate::Window;
+use crate::FifoWindow;
 use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use std::marker::PhantomData;
+use std::collections::VecDeque;
 
-struct RFS<Value, BinOp>
+#[derive(Debug)]
+pub struct RFS<Value, BinOp>
 where
     Value: AbstractMonoid<BinOp> + Clone,
     BinOp: Operator,
 {
-    stack: Vec<Value>,
+    stack: VecDeque<Value>,
     op: PhantomData<BinOp>,
 }
 
-impl<Value, BinOp> Window<Value, BinOp> for RFS<Value, BinOp>
+impl<Value, BinOp> FifoWindow<Value, BinOp> for RFS<Value, BinOp>
 where
     Value: AbstractMonoid<BinOp> + Clone,
     BinOp: Operator,
 {
     fn new() -> RFS<Value, BinOp> {
         RFS {
-            stack: Vec::new(),
+            stack: VecDeque::new(),
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: Value) {
-        self.stack.push(v);
+    fn push(&mut self, v: Value) {
+        self.stack.push_back(v);
     }
-    fn evict(&mut self) {
-        self.stack.pop();
+    fn pop(&mut self) {
+        self.stack.pop_front();
     }
     fn query(&self) -> Value {
         self.stack

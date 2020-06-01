@@ -19,13 +19,13 @@ where
     fn range_query(&self, range: Range<Time>) -> Value;
 }
 
-pub trait Window<Value, BinOp>
+pub trait FifoWindow<Value, BinOp>
 where
     BinOp: Operator,
 {
     fn new() -> Self;
-    fn insert(&mut self, v: Value);
-    fn evict(&mut self);
+    fn push(&mut self, v: Value);
+    fn pop(&mut self);
     fn query(&self) -> Value;
 }
 

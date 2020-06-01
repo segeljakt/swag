@@ -1,7 +1,7 @@
 #![allow(unused)]
 mod chunked_array_queue;
 
-use crate::Window;
+use crate::FifoWindow;
 use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use std::collections::VecDeque;
@@ -25,7 +25,7 @@ where
     op: PhantomData<O>,
 }
 
-impl<Value, BinOp> Window<Value, BinOp> for DABA<Value, BinOp>
+impl<Value, BinOp> FifoWindow<Value, BinOp> for DABA<Value, BinOp>
 where
     Value: Debug + AbstractMonoid<BinOp> + Clone,
     BinOp: Debug + Operator,
@@ -41,12 +41,12 @@ where
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: Value) {
+    fn push(&mut self, v: Value) {
         self.aggs.push_back(self.agg_b().operate(&v));
         self.vals.push_back(v);
         self.fixup();
     }
-    fn evict(&mut self) {
+    fn pop(&mut self) {
         if let Some(_) = self.vals.pop_front() {
             self.aggs.pop_front();
             self.l -= 1;
