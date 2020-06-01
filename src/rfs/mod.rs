@@ -3,35 +3,35 @@ use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use std::marker::PhantomData;
 
-struct RFS<T, O>
+struct RFS<Value, BinOp>
 where
-    T: AbstractMonoid<O> + Clone,
-    O: Operator,
+    Value: AbstractMonoid<BinOp> + Clone,
+    BinOp: Operator,
 {
-    stack: Vec<T>,
-    op: PhantomData<O>,
+    stack: Vec<Value>,
+    op: PhantomData<BinOp>,
 }
 
-impl<T, O> Window<T, O> for RFS<T, O>
+impl<Value, BinOp> Window<Value, BinOp> for RFS<Value, BinOp>
 where
-    T: AbstractMonoid<O> + Clone,
-    O: Operator,
+    Value: AbstractMonoid<BinOp> + Clone,
+    BinOp: Operator,
 {
-    fn new() -> RFS<T, O> {
+    fn new() -> RFS<Value, BinOp> {
         RFS {
             stack: Vec::new(),
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: T) {
+    fn insert(&mut self, v: Value) {
         self.stack.push(v);
     }
     fn evict(&mut self) {
         self.stack.pop();
     }
-    fn query(&self) -> T {
+    fn query(&self) -> Value {
         self.stack
             .iter()
-            .fold(T::identity(), |acc, elem| acc.operate(&elem))
+            .fold(Value::identity(), |acc, elem| acc.operate(&elem))
     }
 }

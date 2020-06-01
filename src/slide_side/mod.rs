@@ -5,40 +5,40 @@ use alga::general::Operator;
 use std::marker::PhantomData;
 use std::ops::Range;
 
-pub struct SlideSide<T, O>
+pub struct SlideSide<Value, BinOp>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    front: Vec<T>,
-    back: Vec<T>,
-    elems: Vec<T>,
+    front: Vec<Value>,
+    back: Vec<Value>,
+    elems: Vec<Value>,
     queries: Vec<Range<Count>>,
-    pub aggs: Vec<T>,
+    pub aggs: Vec<Value>,
     cur_pos: usize,
     window_size: usize,
-    op: PhantomData<O>,
+    op: PhantomData<BinOp>,
 }
 
-impl<T, O> MultiWindow<T, O> for SlideSide<T, O>
+impl<Value, BinOp> MultiWindow<Value, BinOp> for SlideSide<Value, BinOp>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    fn new(queries: &[Range<Count>]) -> SlideSide<T, O> {
+    fn new(queries: &[Range<Count>]) -> SlideSide<Value, BinOp> {
         let window_size = queries.iter().map(window_size).max().unwrap();
         SlideSide {
-            front: vec![T::identity(); window_size + 1],
-            back: vec![T::identity(); window_size + 1],
-            elems: vec![T::identity(); window_size],
-            aggs: vec![T::identity(); queries.len()],
+            front: vec![Value::identity(); window_size + 1],
+            back: vec![Value::identity(); window_size + 1],
+            elems: vec![Value::identity(); window_size],
+            aggs: vec![Value::identity(); queries.len()],
             cur_pos: 0,
             window_size,
             queries: queries.iter().cloned().collect::<Vec<Range<Count>>>(),
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: T) {
+    fn insert(&mut self, v: Value) {
         if self.cur_pos == 0 {
             for i in 0..self.window_size {
                 self.front[i + 1] = self.front[i].operate(&self.elems[self.window_size - i + 1]);

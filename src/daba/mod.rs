@@ -25,12 +25,12 @@ where
     op: PhantomData<O>,
 }
 
-impl<Value, Op> Window<Value, Op> for DABA<Value, Op>
+impl<Value, BinOp> Window<Value, BinOp> for DABA<Value, BinOp>
 where
-    Value: Debug + AbstractMonoid<Op> + Clone,
-    Op: Debug + Operator,
+    Value: Debug + AbstractMonoid<BinOp> + Clone,
+    BinOp: Debug + Operator,
 {
-    fn new() -> DABA<Value, Op> {
+    fn new() -> DABA<Value, BinOp> {
         DABA {
             vals: VecDeque::new(),
             aggs: VecDeque::new(),

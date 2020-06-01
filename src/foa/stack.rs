@@ -1,13 +1,13 @@
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum List<T> {
+pub enum List<Value> {
     Nil,
-    Cons(T, Rc<List<T>>),
+    Cons(Value, Rc<List<Value>>),
 }
 
-impl<T: Clone> List<T> {
-    pub fn empty() -> List<T> {
+impl<Value: Clone> List<Value> {
+    pub fn empty() -> List<Value> {
         List::Nil
     }
 
@@ -18,18 +18,18 @@ impl<T: Clone> List<T> {
         }
     }
 
-    pub fn cons(&self, x: T) -> List<T> {
+    pub fn cons(&self, x: Value) -> List<Value> {
         List::Cons(x, Rc::new(self.clone()))
     }
 
-    pub fn head(&self) -> Option<T> {
+    pub fn head(&self) -> Option<Value> {
         match self {
             List::Cons(h, _) => Some(h.clone()),
             List::Nil => None,
         }
     }
 
-    pub fn tail(&self) -> List<T> {
+    pub fn tail(&self) -> List<Value> {
         match self {
             List::Nil => List::Nil,
             List::Cons(_, t) => (**t).clone(),

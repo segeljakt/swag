@@ -7,10 +7,10 @@ pub(crate) type Uid = u32;
 // const NEG_INFINITY: Time = i32::MIN;
 // const POS_INFINITY: Time = i32::MAX;
 
-pub trait TimeWindow<Time, Value, Op>
+pub trait TimeWindow<Time, Value, BinOp>
 where
     Time: Ord,
-    Op: Operator,
+    BinOp: Operator,
 {
     fn new() -> Self;
     fn insert(&mut self, t: Time, v: Value);
@@ -19,9 +19,9 @@ where
     fn range_query(&self, range: Range<Time>) -> Value;
 }
 
-pub trait Window<Value, Op>
+pub trait Window<Value, BinOp>
 where
-    Op: Operator,
+    BinOp: Operator,
 {
     fn new() -> Self;
     fn insert(&mut self, v: Value);
@@ -29,17 +29,17 @@ where
     fn query(&self) -> Value;
 }
 
-pub trait MultiWindow<Value, Op>
+pub trait MultiWindow<Value, BinOp>
 where
-    Op: Operator,
+    BinOp: Operator,
 {
     fn new(ranges: &[Range<Count>]) -> Self;
     fn insert(&mut self, v: Value);
 }
 
-pub trait FunctionalWindow<Value, Op>
+pub trait FunctionalWindow<Value, BinOp>
 where
-    Op: Operator,
+    BinOp: Operator,
 {
     fn new() -> Self;
     fn insert(&mut self, v: Value) -> Self;

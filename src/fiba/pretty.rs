@@ -13,11 +13,11 @@ pub trait Pretty {
     }
 }
 
-impl<Time, Value, Op> Pretty for FIBA<Time, Value, Op>
+impl<Time, Value, BinOp> Pretty for FIBA<Time, Value, BinOp>
 where
     Time: Ord + std::fmt::Display,
-    Value: AbstractMonoid<Op> + 'static,
-    Op: Operator,
+    Value: AbstractMonoid<BinOp> + 'static,
+    BinOp: Operator,
 {
     fn pretty(&self, indent: usize) -> String {
         unsafe {
@@ -31,7 +31,7 @@ where
     }
 }
 
-impl<Time, Value, Op> Pretty for Node<Time, Value, Op>
+impl<Time, Value, BinOp> Pretty for Node<Time, Value, BinOp>
 where
     Time: std::fmt::Display,
 {

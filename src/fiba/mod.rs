@@ -44,15 +44,15 @@ const MAX_ARITY: Arity = 4;
 // Π→(y) = (x = root ? 1 : Π→(y)) + Π^↑(z0) + Π^(y)
 //
 
-pub struct FIBA<Time, Value, Op>
+pub struct FIBA<Time, Value, BinOp>
 where
     Time: Ord,
-    Value: Clone + AbstractMonoid<Op>,
-    Op: Operator,
+    Value: Clone + AbstractMonoid<BinOp>,
+    BinOp: Operator,
 {
-    root: Box<Node<Time, Value, Op>>,
-    left_finger: NonNull<Node<Time, Value, Op>>,
-    right_finger: NonNull<Node<Time, Value, Op>>,
+    root: Box<Node<Time, Value, BinOp>>,
+    left_finger: NonNull<Node<Time, Value, BinOp>>,
+    right_finger: NonNull<Node<Time, Value, BinOp>>,
     counter: Uid,
 }
 
@@ -62,14 +62,14 @@ struct Item<Time, Value> {
     value: Value,
 }
 
-struct Node<Time, Value, Op> {
-    children: ArrayVec<[Box<Node<Time, Value, Op>>; MAX_ARITY + 1]>,
+struct Node<Time, Value, BinOp> {
+    children: ArrayVec<[Box<Node<Time, Value, BinOp>>; MAX_ARITY + 1]>,
     items: ArrayVec<[Item<Time, Value>; MAX_ARITY]>,
-    parent: Option<NonNull<Node<Time, Value, Op>>>,
+    parent: Option<NonNull<Node<Time, Value, BinOp>>>,
     agg: Value,
     spine: Spine,
     uid: Uid,
-    pt: PhantomData<Op>,
+    pt: PhantomData<BinOp>,
 }
 
 use std::marker::PhantomData;
@@ -100,13 +100,13 @@ impl Spine {
     }
 }
 
-impl<Time, Value, Op> Node<Time, Value, Op>
+impl<Time, Value, BinOp> Node<Time, Value, BinOp>
 where
     Time: Clone + Copy + Ord + 'static,
-    Value: Clone + AbstractMonoid<Op> + 'static,
-    Op: Operator + 'static,
+    Value: Clone + AbstractMonoid<BinOp> + 'static,
+    BinOp: Operator + 'static,
 {
-    fn new(uid: Uid) -> Node<Time, Value, Op> {
+    fn new(uid: Uid) -> Node<Time, Value, BinOp> {
         Node {
             children: ArrayVec::new(),
             items: ArrayVec::new(),
@@ -140,7 +140,7 @@ where
     fn is_root(&self) -> bool {
         self.parent.is_none()
     }
-    fn is_descendent_of(&self, other: &Node<Time, Value, Op>) -> bool {
+    fn is_descendent_of(&self, other: &Node<Time, Value, BinOp>) -> bool {
         let mut node = self;
         while node.parent.is_some() {
             node = node.get_parent();
@@ -156,14 +156,14 @@ where
     }
     // Getters
     #[inline(always)]
-    fn get_parent(&self) -> &'static mut Node<Time, Value, Op> {
+    fn get_parent(&self) -> &'static mut Node<Time, Value, BinOp> {
         unsafe { self.parent.unwrap().as_ptr().as_mut().unwrap() }
     }
     #[inline(always)]
     fn get_arity(&self) -> usize {
         self.items.len() + 1
     }
-    fn get_youngest(&mut self) -> (&mut Node<Time, Value, Op>, Item<Time, Value>) {
+    fn get_youngest(&mut self) -> (&mut Node<Time, Value, BinOp>, Item<Time, Value>) {
         let mut node = self;
         while node.children.last().is_some() {
             node = node.children.last_mut().unwrap();
@@ -171,7 +171,7 @@ where
         let item = node.items.last().unwrap().clone();
         (node, item)
     }
-    fn get_oldest(&mut self) -> (&mut Node<Time, Value, Op>, Item<Time, Value>) {
+    fn get_oldest(&mut self) -> (&mut Node<Time, Value, BinOp>, Item<Time, Value>) {
         let mut node = self;
         while node.children.first().is_some() {
             node = node.children.first_mut().unwrap();
@@ -182,7 +182,7 @@ where
 
     // BTree operations: Splits a node in two by the median item/child. The median item
     // separating the splitted node is inserted at the parent node.
-    fn split(&mut self, tree: &mut FIBA<Time, Value, Op>) {
+    fn split(&mut self, tree: &mut FIBA<Time, Value, BinOp>) {
         let mut left = self;
         // Create new node
         let mut right = tree.new_node();
@@ -207,7 +207,7 @@ where
             left.spine = Spine::new(true, false);
             if left.is_leaf() {
                 tree.left_finger =
-                    unsafe { NonNull::new_unchecked(left as *mut Node<Time, Value, Op>) };
+                    unsafe { NonNull::new_unchecked(left as *mut Node<Time, Value, BinOp>) };
             }
         } else {
             left.spine = Spine::new(false, false);
@@ -232,8 +232,8 @@ where
         &mut self,
         node_idx: usize,
         sibling_idx: usize,
-        tree: &mut FIBA<Time, Value, Op>,
-    ) -> &mut Node<Time, Value, Op> {
+        tree: &mut FIBA<Time, Value, BinOp>,
+    ) -> &mut Node<Time, Value, BinOp> {
         // Merge a and b into one node, and transfer the item between them to the new node
         // Parent is self
         // FIXME: Maybe this can be handled better
@@ -412,7 +412,7 @@ where
             .unwrap();
         idx
     }
-    fn search(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
+    fn search(&mut self, t: Time) -> &mut Node<Time, Value, BinOp> {
         let mut node = self;
         while !node.is_leaf() {
             if let Err(i) = node.item_idx(t) {
@@ -423,7 +423,7 @@ where
         }
         node
     }
-    fn search_from_left_finger(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
+    fn search_from_left_finger(&mut self, t: Time) -> &mut Node<Time, Value, BinOp> {
         let mut node = self;
         while let Err(i) = node.item_idx(t) {
             if node.parent.is_none() {
@@ -441,7 +441,7 @@ where
         }
         node
     }
-    fn search_from_right_finger(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
+    fn search_from_right_finger(&mut self, t: Time) -> &mut Node<Time, Value, BinOp> {
         let mut node = self;
         while let Err(i) = node.item_idx(t) {
             if node.parent.is_none() {
@@ -515,8 +515,8 @@ where
     // The worst-case cost is O(log(n)), bounded by the tree height.
     fn rebalance_for_insert(
         &mut self,
-        tree: &mut FIBA<Time, Value, Op>,
-    ) -> (&mut Node<Time, Value, Op>, Spine) {
+        tree: &mut FIBA<Time, Value, BinOp>,
+    ) -> (&mut Node<Time, Value, BinOp>, Spine) {
         let mut node = self;
         let mut hit = node.spine;
         while node.get_arity() > MAX_ARITY {
@@ -537,8 +537,8 @@ where
     fn rebalance_for_evict(
         &mut self,
         to_repair: Option<Uid>,
-        tree: &mut FIBA<Time, Value, Op>,
-    ) -> (&mut Node<Time, Value, Op>, Spine) {
+        tree: &mut FIBA<Time, Value, BinOp>,
+    ) -> (&mut Node<Time, Value, BinOp>, Spine) {
         let mut node = self;
         let mut hit = node.spine;
         if Some(node.uid) == to_repair {
@@ -577,9 +577,9 @@ where
     fn evict_inner(
         &mut self,
         idx: usize,
-        tree: &mut FIBA<Time, Value, Op>,
-    ) -> (&mut Node<Time, Value, Op>, Spine) {
-        let node = unsafe { (self as *mut Node<Time, Value, Op>).as_mut().unwrap() };
+        tree: &mut FIBA<Time, Value, BinOp>,
+    ) -> (&mut Node<Time, Value, BinOp>, Spine) {
+        let node = unsafe { (self as *mut Node<Time, Value, BinOp>).as_mut().unwrap() };
         let (leaf, item) = if self.children[idx + 1].get_arity() > MIN_ARITY {
             let right = &mut self.children[idx + 1];
             right.get_oldest()
@@ -604,11 +604,11 @@ where
     }
 }
 
-impl<Time, Value, Op> FIBA<Time, Value, Op>
+impl<Time, Value, BinOp> FIBA<Time, Value, BinOp>
 where
     Time: Clone + Copy + Ord + 'static,
-    Value: Clone + AbstractMonoid<Op> + 'static,
-    Op: Operator + 'static,
+    Value: Clone + AbstractMonoid<BinOp> + 'static,
+    BinOp: Operator + 'static,
 {
     fn height_increase(&mut self) {
         let new_root = self.new_node();
@@ -627,7 +627,7 @@ where
         }
         self.root.local_repair_agg();
     }
-    pub fn new() -> FIBA<Time, Value, Op> {
+    pub fn new() -> FIBA<Time, Value, BinOp> {
         let counter = 0;
         let root = Box::new(Node::new(counter));
         let left_finger = NonNull::from(root.as_ref());
@@ -639,7 +639,7 @@ where
             counter,
         }
     }
-    fn new_node(&mut self) -> Box<Node<Time, Value, Op>> {
+    fn new_node(&mut self) -> Box<Node<Time, Value, BinOp>> {
         self.counter += 1;
         Box::new(Node::new(self.counter))
     }
@@ -662,7 +662,7 @@ where
     // such that t = ti. If so, it replaces (ti,vi) by (ti,vi+v). Otherwise, it
     // inserts (t,v) into the window at the appropriate location.
     pub fn insert(&mut self, t: Time, v: Value) {
-        let tree = unsafe { (self as *mut FIBA<Time, Value, Op>).as_mut().unwrap() };
+        let tree = unsafe { (self as *mut FIBA<Time, Value, BinOp>).as_mut().unwrap() };
         // Search for the node where t belongs
         let node = self.search_node(t);
         // Update stored aggregate
@@ -688,7 +688,7 @@ where
     // Checks whether t is in the window, i.e., whether there is an i such that
     // t = ti. If so, it removes (ti,vi) from the window. Otherwise it does nothing.
     pub fn evict(&mut self, t: Time) {
-        let tree = unsafe { (self as *mut FIBA<Time, Value, Op>).as_mut().unwrap() };
+        let tree = unsafe { (self as *mut FIBA<Time, Value, BinOp>).as_mut().unwrap() };
         let node = self.search_node(t);
         if let Some(idx) = node.local_search(t) {
             let (top, hit) = if node.is_leaf() {
@@ -704,7 +704,7 @@ where
     // left- and right-most leaves. Also, we keep parent pointers at each node.
     // Hence, search can start at the nearest finger, walk up to the nearest
     // common ancestor of the finger and y, and walk down from there to y.
-    fn search_node(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
+    fn search_node(&mut self, t: Time) -> &mut Node<Time, Value, BinOp> {
         unsafe {
             match self.root.items.as_slice() {
                 [x, ..] if t < x.time => self.left_finger.as_mut().search_from_left_finger(t),
@@ -727,9 +727,9 @@ where
     }
     // Requires that node.time < time
     fn least_common_ancestor(
-        mut node: &mut Node<Time, Value, Op>,
+        mut node: &mut Node<Time, Value, BinOp>,
         time: Time,
-    ) -> &mut Node<Time, Value, Op> {
+    ) -> &mut Node<Time, Value, BinOp> {
         loop {
             if node.is_root() {
                 return node;
@@ -742,7 +742,7 @@ where
             }
         }
     }
-    fn query_rec(node: &mut Node<Time, Value, Op>, span: Span<Time>) -> Value {
+    fn query_rec(node: &mut Node<Time, Value, BinOp>, span: Span<Time>) -> Value {
         // The insight for preventing spurious recursive calls is that one
         // needs information about neighboring timestamps in a node’s parent to
         // determine whether the node itself is subsumed by the range. This is

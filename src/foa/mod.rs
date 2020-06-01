@@ -12,23 +12,23 @@ pub struct Elem<T> {
     agg: T,
 }
 
-struct FOA<T, O>
+struct FOA<Value, BinOp>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    front: List<Elem<T>>,
-    next: List<Elem<T>>,
-    back: List<Elem<T>>,
-    op: PhantomData<O>,
+    front: List<Elem<Value>>,
+    next: List<Elem<Value>>,
+    back: List<Elem<Value>>,
+    op: PhantomData<BinOp>,
 }
 
-impl<Value, Op> FunctionalWindow<Value, Op> for FOA<Value, Op>
+impl<Value, BinOp> FunctionalWindow<Value, BinOp> for FOA<Value, BinOp>
 where
-    Value: AbstractGroup<Op> + Clone,
-    Op: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    fn new() -> FOA<Value, Op> {
+    fn new() -> FOA<Value, BinOp> {
         FOA {
             front: List::empty(),
             next: List::empty(),
@@ -36,7 +36,7 @@ where
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: Value) -> FOA<Value, Op> {
+    fn insert(&mut self, v: Value) -> FOA<Value, BinOp> {
         FOA {
             front: self.front.clone(),
             next: self.next.clone(),
@@ -48,7 +48,7 @@ where
         }
         .makeq()
     }
-    fn evict(&mut self) -> FOA<Value, Op> {
+    fn evict(&mut self) -> FOA<Value, BinOp> {
         FOA {
             front: self.front.tail(),
             next: self.next.clone(),
@@ -62,15 +62,15 @@ where
     }
 }
 
-impl<T, O> FOA<T, O>
+impl<Value, BinOp> FOA<Value, BinOp>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    fn agg(list: &List<Elem<T>>) -> T {
-        list.head().map(|elem| elem.agg).unwrap_or(T::identity())
+    fn agg(list: &List<Elem<Value>>) -> Value {
+        list.head().map(|elem| elem.agg).unwrap_or(Value::identity())
     }
-    fn makeq(&self) -> FOA<T, O> {
+    fn makeq(&self) -> FOA<Value, BinOp> {
         if self.next.is_empty() {
             let front = Self::rot(FOA {
                 front: self.front.clone(),
@@ -93,7 +93,7 @@ where
             }
         }
     }
-    fn rot(self) -> List<Elem<T>> {
+    fn rot(self) -> List<Elem<Value>> {
         let back = self.back.cons(
             self.next
                 .head()

@@ -3,40 +3,40 @@ use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use std::marker::PhantomData;
 
-struct Item<T: Clone> {
-    agg: T,
-    val: T,
+struct Item<Value: Clone> {
+    agg: Value,
+    val: Value,
 }
 
-impl<T: Clone> Item<T> {
-    fn new(agg: T, val: T) -> Item<T> {
+impl<Value: Clone> Item<Value> {
+    fn new(agg: Value, val: Value) -> Item<Value> {
         Item { agg, val }
     }
 }
 
-pub struct TwoStacks<T, O>
+pub struct TwoStacks<Value, BinOp>
 where
-    T: AbstractMonoid<O> + Clone,
-    O: Operator,
+    Value: AbstractMonoid<BinOp> + Clone,
+    BinOp: Operator,
 {
-    front: Vec<Item<T>>,
-    back: Vec<Item<T>>,
-    op: PhantomData<O>,
+    front: Vec<Item<Value>>,
+    back: Vec<Item<Value>>,
+    op: PhantomData<BinOp>,
 }
 
-impl<T, O> Window<T, O> for TwoStacks<T, O>
+impl<Value, BinOp> Window<Value, BinOp> for TwoStacks<Value, BinOp>
 where
-    T: AbstractMonoid<O> + Clone,
-    O: Operator,
+    Value: AbstractMonoid<BinOp> + Clone,
+    BinOp: Operator,
 {
-    fn new() -> TwoStacks<T, O> {
+    fn new() -> TwoStacks<Value, BinOp> {
         TwoStacks {
             front: Vec::new(),
             back: Vec::new(),
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: T) {
+    fn insert(&mut self, v: Value) {
         self.back
             .push(Item::new(Self::agg(&self.back).operate(&v), v));
     }
@@ -49,7 +49,7 @@ where
         }
         self.front.pop();
     }
-    fn query(&self) -> T {
+    fn query(&self) -> Value {
         Self::agg(&self.front).operate(&Self::agg(&self.back))
     }
 }

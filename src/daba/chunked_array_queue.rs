@@ -5,43 +5,43 @@ type Arity = usize;
 
 const ARITY: Arity = 4;
 
-struct Pointer<T> {
-    chunk: NonNull<Chunk<T>>,
+struct Pointer<Value> {
+    chunk: NonNull<Chunk<Value>>,
     offset: usize,
 }
 
-enum Elem<T> {
+enum Elem<Value> {
     Sentinel,
-    Value(T),
+    Value(Value),
 }
 
-struct ChunkedArrayQueue<T> {
-    front: Pointer<T>,
-    back: Pointer<T>,
+struct ChunkedArrayQueue<Value> {
+    front: Pointer<Value>,
+    back: Pointer<Value>,
 }
 
-struct Chunk<T> {
-    values: ArrayVec<[T; ARITY]>,
-    next: Pointer<T>,
+struct Chunk<Value> {
+    values: ArrayVec<[Value; ARITY]>,
+    next: Pointer<Value>,
 }
 
-impl<T> Pointer<T> {
-    fn new(chunk: &Chunk<T>) -> Self {
+impl<Value> Pointer<Value> {
+    fn new(chunk: &Chunk<Value>) -> Self {
         Self {
             chunk: NonNull::from(chunk),
             offset: 0,
         }
     }
-    fn set(self, other: Pointer<T>) -> Pointer<T> {
+    fn set(self, other: Pointer<Value>) -> Pointer<Value> {
         todo!()
     }
-    fn cmp(self, other: Pointer<T>) -> Pointer<T> {
+    fn cmp(self, other: Pointer<Value>) -> Pointer<Value> {
         todo!()
     }
 }
 
-impl<T> Chunk<T> {
-    fn new(next: NonNull<Chunk<T>>) -> Self {
+impl<Value> Chunk<Value> {
+    fn new(next: NonNull<Chunk<Value>>) -> Self {
         todo!()
         //         Self {
         //             values: ArrayVec::new(),
@@ -50,7 +50,7 @@ impl<T> Chunk<T> {
     }
 }
 
-impl<T> ChunkedArrayQueue<T> {
+impl<Value> ChunkedArrayQueue<Value> {
     fn new() -> Self {
         //         let chunk = Box::new(Chunk::new());
         //         let front = Pointer::new(&chunk);
@@ -58,20 +58,20 @@ impl<T> ChunkedArrayQueue<T> {
         //         Self { front, back }
         todo!()
     }
-    fn push_back(&mut self, v: T) {}
-    fn pop_front(&mut self) -> T {
+    fn push_back(&mut self, v: Value) {}
+    fn pop_front(&mut self) -> Value {
         todo!()
     }
-    fn next(&self, p: Pointer<T>) {
+    fn next(&self, p: Pointer<Value>) {
         todo!()
     }
-    fn prev(&self, p: Pointer<T>) {
+    fn prev(&self, p: Pointer<Value>) {
         todo!()
     }
-    fn read(&self, p: Pointer<T>) -> T {
+    fn read(&self, p: Pointer<Value>) -> Value {
         todo!()
     }
-    fn write(&self, p: Pointer<T>) -> T {
+    fn write(&self, p: Pointer<Value>) -> Value {
         todo!()
     }
 }

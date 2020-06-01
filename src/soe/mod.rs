@@ -4,29 +4,29 @@ use alga::general::Operator;
 use std::collections::VecDeque;
 use std::marker::PhantomData;
 
-struct SOE<T, O>
+struct SOE<Value, BinOp>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    stack: VecDeque<T>,
-    agg: T,
-    op: PhantomData<O>,
+    stack: VecDeque<Value>,
+    agg: Value,
+    op: PhantomData<BinOp>,
 }
 
-impl<T, O> Window<T, O> for SOE<T, O>
+impl<Value, BinOp> Window<Value, BinOp> for SOE<Value, BinOp>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<BinOp> + Clone,
+    BinOp: Operator,
 {
-    fn new() -> SOE<T, O> {
+    fn new() -> SOE<Value, BinOp> {
         SOE {
             stack: VecDeque::new(),
-            agg: T::identity(),
+            agg: Value::identity(),
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: T) {
+    fn insert(&mut self, v: Value) {
         self.agg = self.agg.operate(&v);
         self.stack.push_back(v);
     }
@@ -35,7 +35,7 @@ where
             self.agg = self.agg.operate(&top.two_sided_inverse());
         }
     }
-    fn query(&self) -> T {
+    fn query(&self) -> Value {
         self.agg.clone()
     }
 }
