@@ -1,38 +1,50 @@
 use alga::general::Operator;
 use std::ops::Range;
 
-pub type Time = i32;
 pub type Count = i32;
 pub(crate) type Uid = u32;
 
-const NEG_INFINITY: Time = i32::MIN;
-const POS_INFINITY: Time = i32::MAX;
+// const NEG_INFINITY: Time = i32::MIN;
+// const POS_INFINITY: Time = i32::MAX;
 
-pub trait TimeWindow<T, O: Operator> {
+pub trait TimeWindow<Time, Value, Op>
+where
+    Time: Ord,
+    Op: Operator,
+{
     fn new() -> Self;
-    fn insert(&mut self, t: Time, v: T);
+    fn insert(&mut self, t: Time, v: Value);
     fn evict(&mut self, t: Time);
-    fn query(&self) -> T;
-    fn range_query(&self, range: Range<Time>) -> T;
+    fn query(&self) -> Value;
+    fn range_query(&self, range: Range<Time>) -> Value;
 }
 
-pub trait Window<T, O: Operator> {
+pub trait Window<Value, Op>
+where
+    Op: Operator,
+{
     fn new() -> Self;
-    fn insert(&mut self, v: T);
+    fn insert(&mut self, v: Value);
     fn evict(&mut self);
-    fn query(&self) -> T;
+    fn query(&self) -> Value;
 }
 
-pub trait MultiWindow<T, O: Operator> {
+pub trait MultiWindow<Value, Op>
+where
+    Op: Operator,
+{
     fn new(ranges: &[Range<Count>]) -> Self;
-    fn insert(&mut self, v: T);
+    fn insert(&mut self, v: Value);
 }
 
-pub trait FunctionalWindow<T, O: Operator> {
+pub trait FunctionalWindow<Value, Op>
+where
+    Op: Operator,
+{
     fn new() -> Self;
-    fn insert(&mut self, v: T) -> Self;
+    fn insert(&mut self, v: Value) -> Self;
     fn evict(&mut self) -> Self;
-    fn query(&self) -> T;
+    fn query(&self) -> Value;
 }
 
 // Finger Binary Aggregator

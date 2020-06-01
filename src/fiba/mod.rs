@@ -1,10 +1,7 @@
-// Credit for the comments goes to:
+// All credits for comments below goes to:
 //   Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. Optimal and general out-of-order sliding-window aggregation. Proceedings of the VLDB Endowment, 12(10), pp.1167-1180.
 mod pretty;
-use crate::Time;
 use crate::Uid;
-use crate::NEG_INFINITY;
-use crate::POS_INFINITY;
 use alga::general::AbstractMonoid;
 use alga::general::Operator;
 use arrayvec::ArrayVec;
@@ -47,31 +44,32 @@ const MAX_ARITY: Arity = 4;
 // Π→(y) = (x = root ? 1 : Π→(y)) + Π^↑(z0) + Π^(y)
 //
 
-pub struct FIBA<T, O>
+pub struct FIBA<Time, Value, Op>
 where
-    T: Clone + AbstractMonoid<O>,
-    O: Operator,
+    Time: Ord,
+    Value: Clone + AbstractMonoid<Op>,
+    Op: Operator,
 {
-    root: Box<Node<T, O>>,
-    left_finger: NonNull<Node<T, O>>,
-    right_finger: NonNull<Node<T, O>>,
+    root: Box<Node<Time, Value, Op>>,
+    left_finger: NonNull<Node<Time, Value, Op>>,
+    right_finger: NonNull<Node<Time, Value, Op>>,
     counter: Uid,
 }
 
 #[derive(PartialEq, Eq, Clone)]
-struct Item<T> {
+struct Item<Time, Value> {
     time: Time,
-    value: T,
+    value: Value,
 }
 
-struct Node<T, O> {
-    children: ArrayVec<[Box<Node<T, O>>; MAX_ARITY + 1]>,
-    items: ArrayVec<[Item<T>; MAX_ARITY]>,
-    parent: Option<NonNull<Node<T, O>>>,
-    agg: T,
+struct Node<Time, Value, Op> {
+    children: ArrayVec<[Box<Node<Time, Value, Op>>; MAX_ARITY + 1]>,
+    items: ArrayVec<[Item<Time, Value>; MAX_ARITY]>,
+    parent: Option<NonNull<Node<Time, Value, Op>>>,
+    agg: Value,
     spine: Spine,
     uid: Uid,
-    pt: PhantomData<O>,
+    pt: PhantomData<Op>,
 }
 
 use std::marker::PhantomData;
@@ -90,8 +88,8 @@ enum AggKind {
     Right,
 }
 
-impl<T> Item<T> {
-    fn new(time: Time, value: T) -> Item<T> {
+impl<Time, Value> Item<Time, Value> {
+    fn new(time: Time, value: Value) -> Item<Time, Value> {
         Item { time, value }
     }
 }
@@ -102,17 +100,18 @@ impl Spine {
     }
 }
 
-impl<T, O> Node<T, O>
+impl<Time, Value, Op> Node<Time, Value, Op>
 where
-    T: Clone + AbstractMonoid<O> + 'static,
-    O: Operator + 'static,
+    Time: Clone + Copy + Ord + 'static,
+    Value: Clone + AbstractMonoid<Op> + 'static,
+    Op: Operator + 'static,
 {
-    fn new(uid: Uid) -> Node<T, O> {
+    fn new(uid: Uid) -> Node<Time, Value, Op> {
         Node {
             children: ArrayVec::new(),
             items: ArrayVec::new(),
             parent: None,
-            agg: T::identity(),
+            agg: Value::identity(),
             spine: Spine::new(false, false),
             uid,
             pt: PhantomData,
@@ -141,7 +140,7 @@ where
     fn is_root(&self) -> bool {
         self.parent.is_none()
     }
-    fn is_descendent_of(&self, other: &Node<T, O>) -> bool {
+    fn is_descendent_of(&self, other: &Node<Time, Value, Op>) -> bool {
         let mut node = self;
         while node.parent.is_some() {
             node = node.get_parent();
@@ -157,14 +156,14 @@ where
     }
     // Getters
     #[inline(always)]
-    fn get_parent(&self) -> &'static mut Node<T, O> {
+    fn get_parent(&self) -> &'static mut Node<Time, Value, Op> {
         unsafe { self.parent.unwrap().as_ptr().as_mut().unwrap() }
     }
     #[inline(always)]
     fn get_arity(&self) -> usize {
         self.items.len() + 1
     }
-    fn get_youngest(&mut self) -> (&mut Node<T, O>, Item<T>) {
+    fn get_youngest(&mut self) -> (&mut Node<Time, Value, Op>, Item<Time, Value>) {
         let mut node = self;
         while node.children.last().is_some() {
             node = node.children.last_mut().unwrap();
@@ -172,7 +171,7 @@ where
         let item = node.items.last().unwrap().clone();
         (node, item)
     }
-    fn get_oldest(&mut self) -> (&mut Node<T, O>, Item<T>) {
+    fn get_oldest(&mut self) -> (&mut Node<Time, Value, Op>, Item<Time, Value>) {
         let mut node = self;
         while node.children.first().is_some() {
             node = node.children.first_mut().unwrap();
@@ -183,7 +182,7 @@ where
 
     // BTree operations: Splits a node in two by the median item/child. The median item
     // separating the splitted node is inserted at the parent node.
-    fn split(&mut self, tree: &mut FIBA<T, O>) {
+    fn split(&mut self, tree: &mut FIBA<Time, Value, Op>) {
         let mut left = self;
         // Create new node
         let mut right = tree.new_node();
@@ -207,7 +206,8 @@ where
         if i == 0 && (parent.is_root() || parent.spine.left) {
             left.spine = Spine::new(true, false);
             if left.is_leaf() {
-                tree.left_finger = unsafe { NonNull::new_unchecked(left as *mut Node<T, O>) };
+                tree.left_finger =
+                    unsafe { NonNull::new_unchecked(left as *mut Node<Time, Value, Op>) };
             }
         } else {
             left.spine = Spine::new(false, false);
@@ -232,8 +232,8 @@ where
         &mut self,
         node_idx: usize,
         sibling_idx: usize,
-        tree: &mut FIBA<T, O>,
-    ) -> &mut Node<T, O> {
+        tree: &mut FIBA<Time, Value, Op>,
+    ) -> &mut Node<Time, Value, Op> {
         // Merge a and b into one node, and transfer the item between them to the new node
         // Parent is self
         // FIXME: Maybe this can be handled better
@@ -308,8 +308,8 @@ where
     }
 
     // Π↑(y) = Π↑(z0) + v0 + ... + vα-2 + Π↑(zα-1)
-    fn up_agg(&self) -> T {
-        let mut agg = T::identity();
+    fn up_agg(&self) -> Value {
+        let mut agg = Value::identity();
         if self.is_leaf() {
             for i in 0..self.get_arity() - 1 {
                 agg = agg.operate(&self.items[i].value);
@@ -324,8 +324,8 @@ where
         }
     }
     // Π^(y) = v0 + Π↑(z1) + ... + Π↑(zα-2) + vα-2
-    fn inner_agg(&self) -> T {
-        let mut agg = T::identity();
+    fn inner_agg(&self) -> Value {
+        let mut agg = Value::identity();
         if self.is_leaf() {
             for i in 0..self.get_arity() - 1 {
                 agg = agg.operate(&self.items[i].value);
@@ -340,7 +340,7 @@ where
         agg
     }
     // Π←(y) = Π^(y) + Π^↑(zα-1) + (x = root ? 1 : Π←(y))
-    fn left_agg(&self) -> T {
+    fn left_agg(&self) -> Value {
         let mut agg = self.inner_agg();
         if !self.is_leaf() {
             agg = agg.operate(&self.children.last().unwrap().agg);
@@ -349,7 +349,7 @@ where
         agg
     }
     // Π→(y) = (x = root ? 1 : Π→(y)) + Π^↑(z0) + Π^(y)
-    fn right_agg(&self) -> T {
+    fn right_agg(&self) -> Value {
         let mut agg = self.parent_agg();
         if !self.is_leaf() {
             agg = agg.operate(&self.children.first().unwrap().agg);
@@ -358,10 +358,10 @@ where
         agg
     }
     // x = root ? 1 : ...
-    fn parent_agg(&self) -> T {
+    fn parent_agg(&self) -> Value {
         let parent = self.get_parent();
         if parent.is_root() {
-            T::identity()
+            Value::identity()
         } else {
             parent.agg.clone()
         }
@@ -384,7 +384,7 @@ where
         self.items.binary_search_by_key(&t, |item| item.time).ok()
     }
     // Insert (t,v) and update stored aggregate
-    fn local_insert_time_and_value(&mut self, t: Time, v: T) {
+    fn local_insert_time_and_value(&mut self, t: Time, v: Value) {
         match self.item_idx(t) {
             Ok(i) => self.items[i].value = self.items[i].value.operate(&v),
             Err(i) => self.items.insert(i, Item::new(t, v)),
@@ -412,7 +412,7 @@ where
             .unwrap();
         idx
     }
-    fn search(&mut self, t: Time) -> &mut Node<T, O> {
+    fn search(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
         let mut node = self;
         while !node.is_leaf() {
             if let Err(i) = node.item_idx(t) {
@@ -423,7 +423,7 @@ where
         }
         node
     }
-    fn search_from_left_finger(&mut self, t: Time) -> &mut Node<T, O> {
+    fn search_from_left_finger(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
         let mut node = self;
         while let Err(i) = node.item_idx(t) {
             if node.parent.is_none() {
@@ -441,7 +441,7 @@ where
         }
         node
     }
-    fn search_from_right_finger(&mut self, t: Time) -> &mut Node<T, O> {
+    fn search_from_right_finger(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
         let mut node = self;
         while let Err(i) = node.item_idx(t) {
             if node.parent.is_none() {
@@ -513,7 +513,10 @@ where
     // After-the-fact strategy, amortized constant as long as MAX_ARITY ≥ 2*MIN_ARITY
     // The amortized cost is O(1) as rebalancing rarely goes all the way up the tree.
     // The worst-case cost is O(log(n)), bounded by the tree height.
-    fn rebalance_for_insert(&mut self, tree: &mut FIBA<T, O>) -> (&mut Node<T, O>, Spine) {
+    fn rebalance_for_insert(
+        &mut self,
+        tree: &mut FIBA<Time, Value, Op>,
+    ) -> (&mut Node<Time, Value, Op>, Spine) {
         let mut node = self;
         let mut hit = node.spine;
         while node.get_arity() > MAX_ARITY {
@@ -534,8 +537,8 @@ where
     fn rebalance_for_evict(
         &mut self,
         to_repair: Option<Uid>,
-        tree: &mut FIBA<T, O>,
-    ) -> (&mut Node<T, O>, Spine) {
+        tree: &mut FIBA<Time, Value, Op>,
+    ) -> (&mut Node<Time, Value, Op>, Spine) {
         let mut node = self;
         let mut hit = node.spine;
         if Some(node.uid) == to_repair {
@@ -571,8 +574,12 @@ where
     // To evict something from an inner node
     // Function evict_inner creates an obligation to repair an extra node during
     // rebalancing, handled by parameter to_repair.
-    fn evict_inner(&mut self, idx: usize, tree: &mut FIBA<T, O>) -> (&mut Node<T, O>, Spine) {
-        let node = unsafe { (self as *mut Node<T, O>).as_mut().unwrap() };
+    fn evict_inner(
+        &mut self,
+        idx: usize,
+        tree: &mut FIBA<Time, Value, Op>,
+    ) -> (&mut Node<Time, Value, Op>, Spine) {
+        let node = unsafe { (self as *mut Node<Time, Value, Op>).as_mut().unwrap() };
         let (leaf, item) = if self.children[idx + 1].get_arity() > MIN_ARITY {
             let right = &mut self.children[idx + 1];
             right.get_oldest()
@@ -597,10 +604,11 @@ where
     }
 }
 
-impl<T, O> FIBA<T, O>
+impl<Time, Value, Op> FIBA<Time, Value, Op>
 where
-    T: Clone + AbstractMonoid<O> + 'static,
-    O: Operator + 'static,
+    Time: Clone + Copy + Ord + 'static,
+    Value: Clone + AbstractMonoid<Op> + 'static,
+    Op: Operator + 'static,
 {
     fn height_increase(&mut self) {
         let new_root = self.new_node();
@@ -619,7 +627,7 @@ where
         }
         self.root.local_repair_agg();
     }
-    pub fn new() -> FIBA<T, O> {
+    pub fn new() -> FIBA<Time, Value, Op> {
         let counter = 0;
         let root = Box::new(Node::new(counter));
         let left_finger = NonNull::from(root.as_ref());
@@ -631,18 +639,18 @@ where
             counter,
         }
     }
-    fn new_node(&mut self) -> Box<Node<T, O>> {
+    fn new_node(&mut self) -> Box<Node<Time, Value, Op>> {
         self.counter += 1;
         Box::new(Node::new(self.counter))
     }
     // Combines the values in time order using the + operator. In other words,
     // it returns v1 + ... + vn if the window is non-empty, or 1 if empty.
-    pub fn query(&self) -> T {
+    pub fn query(&self) -> Value {
         if self.root.is_leaf() {
             self.root.agg.clone()
         } else {
             unsafe {
-                let mut agg = T::identity();
+                let mut agg = Value::identity();
                 agg = agg.operate(&self.left_finger.as_ref().agg);
                 agg = agg.operate(&self.root.agg);
                 agg = agg.operate(&self.right_finger.as_ref().agg);
@@ -651,34 +659,10 @@ where
         }
     }
     // Checks whether t is already in the window, i.e. whether there is an i
-    pub fn insert_test(&mut self, t: Time, v: T) {
-        let tree = unsafe { (self as *mut FIBA<T, O>).as_mut().unwrap() };
-        // Search for the node where t belongs
-        let node = self.search_node_test(t);
-        // Update stored aggregate
-        node.local_insert_time_and_value(t, v);
-        //
-        // While rebalancing always works bottom-up, aggregate repair works in the
-        // direction of the partial aggregates: either up for up-agg or inner-agg, or
-        // down for left-agg or right-agg. Our algorithm piggybacks the repair of up-aggs
-        // onto the local insert or evict and onto rebalancing, and then repairs the
-        // remaining aggregates separately. To facilitate the handover from the piggybacked
-        // phase to the dedicated phase of aggregate repair, the rebalancing routines return
-        // a pair (top, hit)
-        //
-        // Node top is where rebalancing topped out, and if it has an up-agg, it is the last
-        // node whose aggregate has already been repaired.
-        // Booleans hit.left and hit.right indicate whether rebalancing affected the left or
-        // right spine, determining whether aggregates on the respective spine have to be
-        // repaired.
-        //
-        let (top, hit) = node.rebalance_for_insert(tree);
-        top.repair_aggs(hit);
-    }
     // such that t = ti. If so, it replaces (ti,vi) by (ti,vi+v). Otherwise, it
     // inserts (t,v) into the window at the appropriate location.
-    pub fn insert(&mut self, t: Time, v: T) {
-        let tree = unsafe { (self as *mut FIBA<T, O>).as_mut().unwrap() };
+    pub fn insert(&mut self, t: Time, v: Value) {
+        let tree = unsafe { (self as *mut FIBA<Time, Value, Op>).as_mut().unwrap() };
         // Search for the node where t belongs
         let node = self.search_node(t);
         // Update stored aggregate
@@ -704,7 +688,7 @@ where
     // Checks whether t is in the window, i.e., whether there is an i such that
     // t = ti. If so, it removes (ti,vi) from the window. Otherwise it does nothing.
     pub fn evict(&mut self, t: Time) {
-        let tree = unsafe { (self as *mut FIBA<T, O>).as_mut().unwrap() };
+        let tree = unsafe { (self as *mut FIBA<Time, Value, Op>).as_mut().unwrap() };
         let node = self.search_node(t);
         if let Some(idx) = node.local_search(t) {
             let (top, hit) = if node.is_leaf() {
@@ -720,16 +704,7 @@ where
     // left- and right-most leaves. Also, we keep parent pointers at each node.
     // Hence, search can start at the nearest finger, walk up to the nearest
     // common ancestor of the finger and y, and walk down from there to y.
-    fn search_node_test(&mut self, t: Time) -> &mut Node<T, O> {
-        unsafe {
-            match self.root.items.as_slice() {
-                [x, ..] if t < x.time => self.left_finger.as_mut().search_from_left_finger(t),
-                [.., x] if t > x.time => self.right_finger.as_mut().search_from_right_finger(t),
-                [..] => self.root.as_mut().search(t),
-            }
-        }
-    }
-    fn search_node(&mut self, t: Time) -> &mut Node<T, O> {
+    fn search_node(&mut self, t: Time) -> &mut Node<Time, Value, Op> {
         unsafe {
             match self.root.items.as_slice() {
                 [x, ..] if t < x.time => self.left_finger.as_mut().search_from_left_finger(t),
@@ -740,17 +715,21 @@ where
     }
     // Aggregates exactly the values in the window whose times fall within the range.
     // If the subrange contains no values, it returns the identity.
-    pub fn range_query(&mut self, range: Range<Time>) -> T {
+    pub fn range_query(&mut self, range: Range<Time>) -> Value {
         // uses recursion starting from the least-common ancestor node whose
         // subtree encompasses the queried range
         let node_from = self.search_node(range.start);
         let node_top = Self::least_common_ancestor(node_from, range.end);
         // invoke at most two chains of recursive calls, one visiting ancestors
         // of node_from and the other visiting ancestors of node_to
-        Self::query_rec(node_top, range)
+        let span = Span::new(Bound::Closed(range.start), Bound::Closed(range.end));
+        Self::query_rec(node_top, span)
     }
     // Requires that node.time < time
-    fn least_common_ancestor(mut node: &mut Node<T, O>, time: Time) -> &mut Node<T, O> {
+    fn least_common_ancestor(
+        mut node: &mut Node<Time, Value, Op>,
+        time: Time,
+    ) -> &mut Node<Time, Value, Op> {
         loop {
             if node.is_root() {
                 return node;
@@ -763,68 +742,124 @@ where
             }
         }
     }
-    fn query_rec(node: &mut Node<T, O>, range: Range<Time>) -> T {
+    fn query_rec(node: &mut Node<Time, Value, Op>, span: Span<Time>) -> Value {
         // The insight for preventing spurious recursive calls is that one
         // needs information about neighboring timestamps in a node’s parent to
         // determine whether the node itself is subsumed by the range. This is
         // passed down the recursive call: whether the neighboring timestamp in
         // the parent is included in the range on the left or right is indicated
         // by t_from = −∞ or t_to= +∞, respectively.
-        if range.start == NEG_INFINITY && range.end == POS_INFINITY && node.has_agg_up() {
+        if span.start.is_open() && span.end.is_open() && node.has_agg_up() {
             return node.agg.clone();
         }
-        let mut res = T::identity();
+        let mut res = Value::identity();
         if !node.is_leaf() {
             let t_next = node.items.first().unwrap().time;
-            if range.start < t_next {
-                let t_a = range.start;
-                let t_b = if t_next <= range.end {
-                    POS_INFINITY
+            if span.start.lt(&t_next) {
+                let t_a = span.start;
+                let t_b = if span.end.gt(&t_next) {
+                    Bound::Open
                 } else {
-                    range.end
+                    span.end
                 };
                 let child = &mut node.children.first_mut().unwrap();
-                res = res.operate(&Self::query_rec(child, t_a..t_b))
+                res = res.operate(&Self::query_rec(child, Span::new(t_a, t_b)))
             }
         }
         for (i, Item { time, value }) in node.items.iter().enumerate() {
-            if range.start <= *time && *time <= range.end {
+            if span.start.leq(time) && span.end.geq(time) {
                 res = res.operate(&value);
             }
             if !node.is_leaf() && i + 1 <= node.get_arity() - 2 {
                 let t_ii = node.items[i + 1].time;
-                if *time < range.end && range.start < t_ii {
-                    let t_a = if range.start <= *time {
-                        NEG_INFINITY
+                if span.end.gt(time) && span.start.lt(&t_ii) {
+                    let t_a = if span.start.leq(time) {
+                        Bound::Open
                     } else {
-                        range.start
+                        span.start
                     };
-                    let t_b = if t_ii <= range.end {
-                        POS_INFINITY
+                    let t_b = if span.end.geq(&t_ii) {
+                        Bound::Open
                     } else {
-                        range.end
+                        span.end
                     };
                     let child = &mut node.children[i + 1];
                     // each recursive call returns the aggregate of the intersection between
                     // its subtree and the queried range.
-                    res = res.operate(&Self::query_rec(child, t_a..t_b));
+                    res = res.operate(&Self::query_rec(child, Span::new(t_a, t_b)));
                 }
             }
         }
         if !node.is_leaf() {
             let t_curr = node.items[node.get_arity() - 2].time;
-            if t_curr < range.end {
-                let t_a = if range.start <= t_curr {
-                    NEG_INFINITY
+            if span.end.gt(&t_curr) {
+                let t_a = if span.start.leq(&t_curr) {
+                    Bound::Open
                 } else {
-                    range.start
+                    span.start
                 };
-                let t_b = range.end;
+                let t_b = span.end;
                 let arity = node.get_arity();
                 let child = &mut node.children[arity - 1];
-                res = res.operate(&Self::query_rec(child, t_a..t_b));
+                res = res.operate(&Self::query_rec(child, Span::new(t_a, t_b)));
             }
         }
         res
+    }
+}
+
+#[derive(Clone, Copy)]
+enum Bound<Time: Ord> {
+    Open,
+    Closed(Time),
+}
+
+#[derive(Clone, Copy)]
+struct Span<Time: Ord> {
+    start: Bound<Time>,
+    end: Bound<Time>,
+}
+
+impl<Time: Ord> Span<Time> {
+    fn new(start: Bound<Time>, end: Bound<Time>) -> Span<Time> {
+        Span { start, end }
+    }
+}
+
+impl<Time: Ord> Bound<Time> {
+    // self > other
+    fn gt(&self, other: &Time) -> bool {
+        match self {
+            Bound::Closed(t) => other < t,
+            Bound::Open => true,
+        }
+    }
+    // self < other
+    fn lt(&self, other: &Time) -> bool {
+        match self {
+            Bound::Closed(t) => t < other,
+            Bound::Open => true,
+        }
+    }
+    // self >= other
+    fn geq(&self, other: &Time) -> bool {
+        match self {
+            Bound::Closed(t) => other <= t,
+            Bound::Open => true,
+        }
+    }
+    // self <= other
+    fn leq(&self, other: &Time) -> bool {
+        match self {
+            Bound::Closed(t) => t <= other,
+            Bound::Open => true,
+        }
+    }
+    fn is_open(&self) -> bool {
+        if let Bound::Open = self {
+            true
+        } else {
+            false
+        }
     }
 }

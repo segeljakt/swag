@@ -3,9 +3,12 @@ use alga::general::AbstractMonoid;
 use alga::general::AbstractSemigroup;
 use alga::general::Identity;
 use alga::general::Operator;
-use {criterion::*, swag::fiba::Fiba, swag::Time};
+use {criterion::*, swag::fiba::FIBA};
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 struct Value(i32);
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
+struct Time(i64);
 
 #[derive(Copy, Clone)]
 struct BinOp;
@@ -126,16 +129,16 @@ criterion_main!(benches);
 /// * Higher min-arity => Better for cheap operators, since fewer rebalances/repairs
 fn experiment_1_varying_distance(criterion: &mut Criterion) {
     // Setup
-    let mut tree = Fiba::<Value, BinOp>::new();
-    let timestamps = (2 as Time).pow(22);
-    for timestamp in 0..timestamps {
-        tree.insert(timestamp, Value(0));
+    let mut tree = FIBA::<Time, Value, BinOp>::new();
+    let timestamps = (2 as i64).pow(22);
+    for t in 0..timestamps {
+        tree.insert(Time(t), Value(0));
     }
     let mut g = criterion.benchmark_group("bfinger2");
     let g = g.throughput(Throughput::Elements(1));
     // Experiment
     for exponent in 0..22 {
-        let d = (2 as Time).pow(exponent);
+        let d = Time((2 as i64).pow(exponent));
         g.bench_with_input(format!("2^{}", exponent), &d, |bench, d| {
             bench.iter(|| {
                 tree.insert(black_box(*d), black_box(Value(0)));
@@ -186,16 +189,16 @@ fn experiment_1_varying_distance(criterion: &mut Criterion) {
 // * Measure number of clock cycles per round
 fn experiment_2_latency(criterion: &mut Criterion) {
     // Setup
-    let mut tree = Fiba::<Value, BinOp>::new();
-    let timestamps = (2 as Time).pow(22);
-    for timestamp in 0..timestamps {
-        tree.insert(timestamp, Value(0));
+    let mut tree = FIBA::<Time, Value, BinOp>::new();
+    let timestamps = (2 as i64).pow(22);
+    for t in 0..timestamps {
+        tree.insert(Time(t), Value(0));
     }
     let mut g = criterion.benchmark_group("bfinger2");
     let g = g.throughput(Throughput::Elements(1));
     // Experiment
     for &exponent in [0, 20].iter() {
-        let d = (2 as Time).pow(exponent);
+        let d = Time((2 as i64).pow(exponent));
         g.bench_with_input(format!("2^{}", exponent), &d, |bench, d| {
             bench.iter(|| {
                 tree.insert(black_box(*d), black_box(Value(0)));

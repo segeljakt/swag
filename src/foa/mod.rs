@@ -23,12 +23,12 @@ where
     op: PhantomData<O>,
 }
 
-impl<T, O> FunctionalWindow<T, O> for FOA<T, O>
+impl<Value, Op> FunctionalWindow<Value, Op> for FOA<Value, Op>
 where
-    T: AbstractGroup<O> + Clone,
-    O: Operator,
+    Value: AbstractGroup<Op> + Clone,
+    Op: Operator,
 {
-    fn new() -> FOA<T, O> {
+    fn new() -> FOA<Value, Op> {
         FOA {
             front: List::empty(),
             next: List::empty(),
@@ -36,7 +36,7 @@ where
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: T) -> FOA<T, O> {
+    fn insert(&mut self, v: Value) -> FOA<Value, Op> {
         FOA {
             front: self.front.clone(),
             next: self.next.clone(),
@@ -48,7 +48,7 @@ where
         }
         .makeq()
     }
-    fn evict(&mut self) -> FOA<T, O> {
+    fn evict(&mut self) -> FOA<Value, Op> {
         FOA {
             front: self.front.tail(),
             next: self.next.clone(),
@@ -57,7 +57,7 @@ where
         }
         .makeq()
     }
-    fn query(&self) -> T {
+    fn query(&self) -> Value {
         Self::agg(&self.front).operate(&Self::agg(&self.back))
     }
 }

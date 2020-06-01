@@ -13,7 +13,12 @@ pub trait Pretty {
     }
 }
 
-impl<T: AbstractMonoid<O> + 'static, O: Operator> Pretty for FIBA<T, O> {
+impl<Time, Value, Op> Pretty for FIBA<Time, Value, Op>
+where
+    Time: Ord + std::fmt::Display,
+    Value: AbstractMonoid<Op> + 'static,
+    Op: Operator,
+{
     fn pretty(&self, indent: usize) -> String {
         unsafe {
             format!(
@@ -26,7 +31,10 @@ impl<T: AbstractMonoid<O> + 'static, O: Operator> Pretty for FIBA<T, O> {
     }
 }
 
-impl<T, O> Pretty for Node<T, O> {
+impl<Time, Value, Op> Pretty for Node<Time, Value, Op>
+where
+    Time: std::fmt::Display,
+{
     fn pretty(&self, indent: usize) -> String {
         let members = self
             .children
@@ -54,7 +62,10 @@ impl<T, O> Pretty for Node<T, O> {
     }
 }
 
-impl<T> Pretty for Item<T> {
+impl<Time, Value> Pretty for Item<Time, Value>
+where
+    Time: std::fmt::Display,
+{
     fn pretty(&self, _: usize) -> String {
         format!(
             "Item({time}:{value:?})",

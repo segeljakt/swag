@@ -4,13 +4,15 @@ use alga::general::AbstractSemigroup;
 use alga::general::Identity;
 use alga::general::Operator;
 use swag::fiba::*;
-use swag::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 struct Value(i32);
 
 #[derive(Copy, Clone)]
 struct BinOp;
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
+struct Time(i64);
 
 impl Operator for BinOp {
     fn operator_token() -> BinOp {
@@ -35,38 +37,41 @@ impl AbstractMonoid<BinOp> for Value {}
 
 #[test]
 fn fiba_lifo() {
-    let mut tree: FIBA<Value, BinOp> = FIBA::new();
+    let mut tree: FIBA<Time, Value, BinOp> = FIBA::new();
     let count = 100;
     for i in 1..=count {
-        tree.insert(i, Value(1));
+        tree.insert(Time(i), Value(1));
         assert_eq!(tree.query(), Value(i as i32));
     }
     for i in (1..=100).rev() {
-        tree.evict(i);
+        tree.evict(Time(i));
         assert_eq!(tree.query(), Value(i as i32 - 1));
     }
 }
 
 #[test]
 fn fiba_fifo() {
-    let mut tree: FIBA<Value, BinOp> = FIBA::new();
+    let mut tree: FIBA<Time, Value, BinOp> = FIBA::new();
     let count = 15;
     for i in 1..=count {
-        tree.insert(i, Value(1));
+        tree.insert(Time(i), Value(1));
         assert_eq!(tree.query(), Value(i as i32));
     }
     for i in 1..=count {
-        tree.evict(i);
+        tree.evict(Time(i));
         assert_eq!(tree.query(), Value((count - i) as i32));
     }
 }
 
 #[test]
 fn fiba_random_access() {
-    let mut tree: FIBA<Value, BinOp> = FIBA::new();
+    let mut tree: FIBA<Time, Value, BinOp> = FIBA::new();
     const COUNT: usize = 10;
 
-    let times: [Time; COUNT] = [10, 0, 1, 9, -1, 4, 20, 3, -10, -30];
+    let times: Vec<Time> = [10, 0, 1, 9, -1, 4, 20, 3, -10, -30]
+        .iter()
+        .map(|t| Time(*t))
+        .collect();
     for (i, &time) in times.iter().enumerate() {
         assert_eq!(tree.query(), Value(i as i32));
         tree.insert(time, Value(1));
@@ -83,28 +88,28 @@ fn fiba_random_access() {
 
 #[test]
 fn fiba_range_query() {
-    let mut tree: FIBA<Value, BinOp> = FIBA::new();
+    let mut tree: FIBA<Time, Value, BinOp> = FIBA::new();
     let count = 15;
     for i in 1..=count {
-        tree.insert(i, Value(1));
+        tree.insert(Time(i), Value(1));
         assert_eq!(tree.query(), Value(i as i32));
     }
 
-    assert_eq!(Value(10), tree.range_query(0..10));
+    assert_eq!(Value(10), tree.range_query(Time(0)..Time(10)));
 }
 
 #[test]
 fn fiba_big_query() {
-    let mut tree: FIBA<Value, BinOp> = FIBA::new();
-    let timestamps = (2 as Time).pow(22);
-    for timestamp in 0..timestamps {
-        tree.insert(timestamp, Value(1));
+    let mut tree: FIBA<Time, Value, BinOp> = FIBA::new();
+    let timestamps = (2 as i64).pow(22);
+    for t in 0..timestamps {
+        tree.insert(Time(t), Value(1));
     }
     for _ in 0..10 {
         for exponent in 0..22 {
-            let d = (2 as Time).pow(exponent);
-            tree.insert_test(d, Value(0));
-            tree.evict(d);
+            let d = (2 as i64).pow(exponent);
+            tree.insert(Time(d), Value(0));
+            tree.evict(Time(d));
             tree.query();
         }
     }

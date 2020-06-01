@@ -25,12 +25,12 @@ where
     op: PhantomData<O>,
 }
 
-impl<T, O> Window<T, O> for DABA<T, O>
+impl<Value, Op> Window<Value, Op> for DABA<Value, Op>
 where
-    T: Debug + AbstractMonoid<O> + Clone,
-    O: Debug + Operator,
+    Value: Debug + AbstractMonoid<Op> + Clone,
+    Op: Debug + Operator,
 {
-    fn new() -> DABA<T, O> {
+    fn new() -> DABA<Value, Op> {
         DABA {
             vals: VecDeque::new(),
             aggs: VecDeque::new(),
@@ -41,7 +41,7 @@ where
             op: PhantomData,
         }
     }
-    fn insert(&mut self, v: T) {
+    fn insert(&mut self, v: Value) {
         self.aggs.push_back(self.agg_b().operate(&v));
         self.vals.push_back(v);
         self.fixup();
@@ -56,7 +56,7 @@ where
             self.fixup();
         }
     }
-    fn query(&self) -> T {
+    fn query(&self) -> Value {
         self.agg_f().operate(&self.agg_b())
     }
 }
