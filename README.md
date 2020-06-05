@@ -7,27 +7,9 @@ This is a crate for Sliding Window Aggregation (SWAG).
 
 The Windowing Problem is defined by the following characteristics, definition from [1]:
 
-* Aggregation Functions
-  * Distributive
-  * Algebraic
-  * Holistic
-  * Associativity
-  * Commutativity
-  * Invertibility
-* Window Types
-  * Context Free
-  * Forward Context Free
-  * Forward Context Sensitive
-* Stream Order
-  * In-order
-  * Out-of-order
-* Window Measures
-  * Time
-  * Tuple count
-  * Arbitrary
-* State
-  * In-memory
-  * Out-of-core
+<p align="center">
+  <img src="https://github.com/segeljakt/assets/raw/master/WindowingProblem.jpeg">
+</p>
 
 # API
 
