@@ -11,6 +11,7 @@ use swag::daba::*;
 use swag::rfs::*;
 use swag::soe::*;
 use swag::two_stacks::*;
+use swag::flat_fat::ra_fifo::*;
 use swag::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -55,19 +56,15 @@ where
 {
     assert_eq!(window.query(), Value(0));
     window.push(Value(1));
-    println!("{:?}", window);
     assert_eq!(window.query(), Value(1));
 
     window.push(Value(2));
-    println!("{:?}", window);
     assert_eq!(window.query(), Value(3));
 
     window.push(Value(3));
-    println!("{:?}", window);
     assert_eq!(window.query(), Value(6));
 
     window.pop();
-    println!("{:?}", window);
     assert_eq!(window.query(), Value(5));
 }
 
@@ -89,4 +86,9 @@ fn test_simple_two_stacks() {
 #[test]
 fn test_simple_daba() {
     test_simple(DABA::<Value, Sum>::new());
+}
+
+#[test]
+fn test_simple_flat_fat() {
+    test_simple(RA::<Value, Sum>::with_capacity(2));
 }

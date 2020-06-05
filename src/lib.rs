@@ -16,6 +16,13 @@ where
     fn insert(&mut self, t: Time, v: Value);
     fn evict(&mut self, t: Time);
     fn query(&self) -> Value;
+}
+
+pub trait TimeWindowExtra<Time, Value, BinOp>
+where
+    Time: Ord,
+    BinOp: Operator,
+{
     fn range_query(&self, range: Range<Time>) -> Value;
 }
 
@@ -61,3 +68,5 @@ pub mod foa;
 pub mod daba;
 // Slide Side (TwoStacks with shared windows)
 pub mod slide_side;
+// FlatFAT (flat fixed-size aggregator)
+pub mod flat_fat;

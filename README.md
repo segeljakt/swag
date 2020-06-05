@@ -58,7 +58,7 @@ The Windowing Problem is defined by the following characteristics, definition fr
 |---------------------------------------|-------|----------------|----------|-------|------------|-------------|-------------|------|
 | **Subtract on Evict**                 [2] | SoE   | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
 | **Recalculate from Scratch**          [2] | RFS   | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
-| **Reactive Aggregator**               [2] | -     | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
+| **Reactive Aggregator**               [4] | -     | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
 | **Two-Stacks**                        [2] | -     | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
 | **Functional Okasaki Aggregator**     [2] | FOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
 | **Imperative Okasaki Aggregator**     [2] | IOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
@@ -69,8 +69,10 @@ The Windowing Problem is defined by the following characteristics, definition fr
 
 [1] Traub, J., Grulich, P.M., Cuéllar, A.R., Breß, S., Katsifodimos, A., Rabl, T. and Markl, V., 2019. **Efficient Window Aggregation with General Stream Slicing.** In EDBT (pp. 97-108).
 
-[2] Tangwongsan, K., Hirzel, M. and Schneider, S., 2017, June. **Low-latency sliding-window aggregation in worst-case constant time.** In Proceedings of the 11th ACM International Conference on Distributed and Event-based Systems (pp. 66-77).
+[2] Tangwongsan, K., Hirzel, M. and Schneider, S., 2017, June. **Low-Latency Sliding-Window Aggregation in Worst-Case Constant Time.** In Proceedings of the 11th ACM International Conference on Distributed and Event-based Systems (pp. 66-77).
 
-[3] Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. **Optimal and general out-of-order sliding-window aggregation.** Proceedings of the VLDB Endowment, 12(10), pp.1167-1180.
+[3] Tangwongsan, K., Hirzel, M. and Schneider, S., 2019. **Optimal and General Out-of-Order Sliding-Window Aggregation.** Proceedings of the VLDB Endowment, 12(10), pp.1167-1180.
+
+[3] Tangwongsan, K., Hirzel, M., Schneider, S. and Wu, K.L., 2015. **General Incremental Sliding-Window Aggregation**. Proceedings of the VLDB Endowment, 8(7), pp.702-713.
 
 
