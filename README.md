@@ -40,8 +40,8 @@ The Windowing Problem is defined by the following characteristics, definition fr
 |---------------------------------------|-------|----------------|----------|-------|------------|-------------|-------------|------|
 | **Subtract on Evict**                 [2] | SoE   | Worst O(1)     | Yes      | O(1)  | Yes        | No          | No          | No   |
 | **Recalculate from Scratch**          [2] | RFS   | Worst O(n)     | Yes      | O(n)  | No         | No          | No          | No   |
-| **Reactive Aggregator**               [4] | -     | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
-| **Two-Stacks**                        [2] | -     | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
+| **Reactive Aggregator**               [4] | RA    | Avg O(log n)   | Yes      | O(n)  | No         | No          | No          | No   |
+| **Two-Stacks**                        [2] | 2S    | Avg O(1)       | Yes      | O(n)  | No         | No          | No          | Yes  |
 | **Functional Okasaki Aggregator**     [2] | FOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
 | **Imperative Okasaki Aggregator**     [2] | IOA   | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
 | **De-Amortized Banker's Aggregator**  [2] | DABA  | Worst O(1)     | Yes      | O(n)  | No         | No          | No          | Yes  |
